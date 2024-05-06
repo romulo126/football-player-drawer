@@ -1,0 +1,36 @@
+version: '3'
+services:
+  futebol_laravel:
+    build: 
+      context: ./Docker/Laravel
+      dockerfile: Dockerfile
+    volumes:
+      - ./code:/var/www/html
+    command: /bin/sh -c "while true; do echo 'Restarting WPPConnect...'; sleep 1500; done"
+    ports:
+      - 800:80
+    depends_on:
+      futebol_mysql:
+        condition: service_healthy
+    links: 
+      - futebol_mysql:db
+  futebol_mysql:
+    build:
+      context: ./Docker/Mysql
+      dockerfile: Dockerfile
+    container_name: futebol_mysql
+    ports: 
+      - "3307:3306"
+    healthcheck:
+      test: [ 'CMD', 'mysqladmin', 'ping', '-u', 'root', '--password=123456' ]
+      interval: 1m
+      timeout: 10s
+      retries: 5       
+    environment:
+      MYSQL_DATABASE: futebol
+      MYSQL_USER: futebol
+      MYSQL_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: 123456 
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_PORT: 3306
+      MYSQL_CHARSET: utf8
