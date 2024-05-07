@@ -45,8 +45,9 @@ class SoccerTeamService
 
     public function drawPlayers() 
     {
-        $jogadoresConfirmados = $this->repositorySoccerPlayer->getConfirmedPlayers()
-            ->shuffle();
+        $jogadoresConfirmados = $this->repositorySoccerPlayer->getConfirmedPlayers()->sortByDesc('skill_level');
+        $goalkeeper = $jogadoresConfirmados->where('goalkeeper', true);
+        $jogadoresLinha = $jogadoresConfirmados->where('goalkeeper', false)->shuffle();
 
         if (empty($jogadoresConfirmados)) {
             throw new Exception("Não existe usuarios confirmados");
@@ -63,11 +64,18 @@ class SoccerTeamService
                 $equipe->name => [
                     'jogadores' => collect(),
                     'total_permitido' => $equipe->players,
+                    'total_goalkeeper' => 1,
                     ]
                 ];
         });
 
-        foreach ($jogadoresConfirmados as $jogador) {
+        foreach ($goalkeeper as $jogador) {
+            if (! $this->allocatePlayers($jogador, $distribuicao, true)) {
+                throw new Exception("Não há espaço suficiente nas equipes para alocar o goleiro.");
+            }
+        }
+
+        foreach ($jogadoresLinha as $jogador) {
             if (! $this->allocatePlayers($jogador, $distribuicao)) {
                 throw new Exception("Não há espaço suficiente nas equipes existentes para alocar todos os jogadores.");
             }
@@ -77,11 +85,14 @@ class SoccerTeamService
         return $distribuicao;
     }
 
-    private function allocatePlayers($jogador, &$distribuicao)
+    private function allocatePlayers($jogador, &$distribuicao, $is_goalkeeper = false)
     {
         $allocated = false;
-        $distribuicao->each(function ($dadosEquipe, $id) use (&$allocated, $jogador, &$distribuicao) {
-            if (!$allocated && $dadosEquipe['jogadores']->count() < $dadosEquipe['total_permitido']) {
+        $distribuicao->each(function ($dadosEquipe, $id) use (&$allocated, $jogador, &$distribuicao, $is_goalkeeper) {
+            if ($is_goalkeeper && ! $allocated && $dadosEquipe['jogadores']->count() < $dadosEquipe['total_goalkeeper']) {
+                $distribuicao[$id]['jogadores']->push($jogador->name);
+                $allocated = true;
+            } elseif (! $allocated && $dadosEquipe['jogadores']->count() < $dadosEquipe['total_permitido'] && ! $is_goalkeeper) {
                 $distribuicao[$id]['jogadores']->push($jogador->name);
                 $allocated = true;
             }
