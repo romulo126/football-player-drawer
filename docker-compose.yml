@@ -10,7 +10,7 @@ services:
     entrypoint: ["/usr/local/bin/entrypoint.sh"]
     container_name: futebol_laravel
     ports:
-      - 800:80
+      - 80:80
     depends_on:
       futebol_mysql:
         condition: service_healthy
