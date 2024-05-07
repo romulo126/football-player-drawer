@@ -6,7 +6,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./code:/var/www/html
-    command: /bin/sh -c "while true; do echo 'Restarting WPPConnect...'; sleep 1500; done"
+      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
     container_name: futebol_laravel
     ports:
       - 800:80
