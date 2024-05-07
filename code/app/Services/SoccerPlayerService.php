@@ -32,4 +32,19 @@ class SoccerPlayerService
     {
         return $this->repository->find($id);
     }
+
+    public function getConfirmedPlayers()
+    {
+        return optional($this->repository->getConfirmedPlayers())->toArray();
+    }
+
+    public function getNotConfirmedPlayers()
+    {
+        return optional($this->repository->getNotConfirmedPlayers())->toArray();
+    }
+
+    public function all()
+    {
+        return optional($this->repository->all())->toArray();
+    }
 }
