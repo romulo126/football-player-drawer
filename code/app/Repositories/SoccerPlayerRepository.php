@@ -15,4 +15,8 @@ class SoccerPlayerRepository extends BaseRepository
     public function getConfirmedPlayers() {
         return $this->model->select(['name', 'goalkeeper', 'skill_level'])->where('confirmed', true)->get();
     }
+
+    public function getNotConfirmedPlayers() {
+        return $this->model->select(['name', 'goalkeeper', 'skill_level'])->where('confirmed', false)->get();
+    }
 }
